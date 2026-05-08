@@ -1,5 +1,7 @@
 # fuzzy_math.py
 
+import numpy as np
+
 def triangulaire(x, a, b, c):
     """Calcule le degré d'appartenance pour une loi triangle."""
     if x <= a or x >= c:
@@ -21,3 +23,6 @@ def trapezoidale(x, a, b, c, d):
     elif c < x < d:
         return (d - x) / (d - c) if (d - c) != 0 else 1.0
     return 0
+
+def gaussienne(x, moyenne, ecart_type):
+    return np.exp(-0.5 * ((x - moyenne) / ecart_type) ** 2)

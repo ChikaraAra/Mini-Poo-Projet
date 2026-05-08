@@ -1,6 +1,6 @@
 # fuzzy_classes.py
 import numpy as np
-from fonction_math_MP import triangulaire, trapezoidale
+from fonction_math_MP import triangulaire, trapezoidale, gaussienne
 
 class FuzzySet:
     """Définit un ensemble flou (ex: 'Froid', 'Chaud') et sa loi mathématique."""
@@ -15,6 +15,8 @@ class FuzzySet:
             return triangulaire(x, self.params['a'], self.params['b'], self.params['c'])
         elif self.set_type == "trapezoidale":
             return trapezoidale(x, self.params['a'], self.params['b'], self.params['c'], self.params['d'])
+        elif self.set_type == "gaussienne":
+            return gaussienne(x, self.params['moyenne'], self.params['ecart_type'])
         return 0.0
 
 class Variable:

@@ -25,4 +25,5 @@ def trapezoidale(x, a, b, c, d):
     return 0
 
 def gaussienne(x, moyenne, ecart_type):
+    """Calcule le degré d'appartenance pour une loi Gaussienne"""
     return np.exp(-0.5 * ((x - moyenne) / ecart_type) ** 2)

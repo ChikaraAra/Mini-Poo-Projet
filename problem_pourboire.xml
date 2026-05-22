@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+<!-- 
+- 2 Input Variables (Quality of food and quality of the service)
+- 1 Output Variable (tip given to the waiter, in % of the bill)
+- 3 Simple Rules (two with operator)
+- This is a classical example for fuzzy-logic inference and use
+ -->
+
+<FuzzySystem>
+
+  <InputVariables>
+    <InputVariable name="food_quality" min="0" max="10" unit="/10">
+      <FuzzySet name="RANCID" type="half_trapezoidal" a="left" b="3" c="6"/>
+      <FuzzySet name="DELICIOUS" type="half_trapezoidal" a="right" b="4" c="7"/>
+    </InputVariable>
+
+    <InputVariable name="service_quality" min="0" max="10" unit="/10">
+      <FuzzySet name="POOR" type="half_trapezoidal" a="left" b="2" c="4"/>
+      <FuzzySet name="GOOD" type="triangular" a="3" b="5" c="7"/>
+      <FuzzySet name="EXCELLENT" type="half_trapezoidal" a="right" b="6" c="8"/>
+    </InputVariable>
+  </InputVariables>
+
+  <OutputVariables>
+    <OutputVariable name="waiter_tip" min="10" max="50" unit="%" nb_points="200" defuzzification="CoG" aggregation="Max">
+      <FuzzySet name="CHEAP" type="half_trapezoidal" a="left" b="20" c="30"/>
+      <FuzzySet name="AVERAGE" type="triangular" a="20" b="30" c="40"/>
+      <FuzzySet name="GENEROUS" type="half_trapezoidal" a="right" b="30" c="40"/>
+    </OutputVariable>
+  </OutputVariables>
+
+  <Rules>
+    <Rule id="1" description="if service is poor or food is rancid, then tip is cheap">
+      <Premise operator="OR">
+        <Clause variable="service_quality" set="POOR"/>
+        <Clause variable="food_quality" set="RANCID"/>
+      </Premise>
+      <Conclusion variable="waiter_tip" set="CHEAP"/>
+    </Rule>
+
+    <Rule id="2" description="If service is good, then tip is average">
+      <Premise>
+        <Clause variable="service_quality" set="GOOD"/>
+      </Premise>
+      <Conclusion variable="waiter_tip" set="AVERAGE"/>
+    </Rule>
+
+    <Rule id="3" description="If service is excellent or food is delicious, then tip is generous">
+      <Premise operator="OR">
+        <Clause variable="service_quality" set="EXCELLENT"/>
+        <Clause variable="food_quality" set="DELICIOUS"/>
+      </Premise>
+      <Conclusion variable="waiter_tip" set="GENEROUS"/>
+    </Rule>
+  </Rules>
+</FuzzySystem>

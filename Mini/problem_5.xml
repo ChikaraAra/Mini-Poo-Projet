@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+- 4 Input Variables (Temperature, Humidity, AirQuality, Occupancy)
+- 2 Output Variables (HVAC_Power, AirPurifier_Level)
+- 10 Complex Rules with nested logical operators (AND/OR/NOT/XOR)
+- Designed to stress-test fuzzy logic engines
+-->
+
+<FuzzySystem>
+
+    <!-- INPUT VARIABLES -->
+    <InputVariables>
+        <!-- Temperature in Celsius -->
+        <InputVariable name="Temperature" min="-10" max="50" unit="°C">
+            <FuzzySet name="FREEZING" type="trapezoidal" a="-10" b="-10" c="0" d="5"/>
+            <FuzzySet name="COLD" type="triangular" a="0" b="10" c="20"/>
+            <FuzzySet name="COOL" type="triangular" a="15" b="20" c="25"/>
+            <FuzzySet name="COMFORTABLE" type="triangular" a="20" b="25" c="30"/>
+            <FuzzySet name="WARM" type="triangular" a="25" b="30" c="35"/>
+            <FuzzySet name="HOT" type="triangular" a="30" b="40" c="50"/>
+            <FuzzySet name="EXTREME" type="trapezoidal" a="40" b="45" c="50" d="50"/>
+        </InputVariable>
+
+        <!-- Humidity in percentage -->
+        <InputVariable name="Humidity" min="0" max="100" unit="%">
+            <FuzzySet name="BONE_DRY" type="trapezoidal" a="0" b="0" c="10" d="20"/>
+            <FuzzySet name="DRY" type="triangular" a="10" b="30" c="50"/>
+            <FuzzySet name="COMFORTABLE" type="triangular" a="40" b="50" c="60"/>
+            <FuzzySet name="HUMID" type="triangular" a="50" b="70" c="90"/>
+            <FuzzySet name="SOGGY" type="trapezoidal" a="80" b="90" c="100" d="100"/>
+        </InputVariable>
+
+        <!-- Air Quality Index (0-500) -->
+        <InputVariable name="AirQuality" min="0" max="500">
+            <FuzzySet name="EXCELLENT" type="trapezoidal" a="0" b="0" c="50" d="100"/>
+            <FuzzySet name="GOOD" type="triangular" a="50" b="100" c="150"/>
+            <FuzzySet name="MODERATE" type="triangular" a="100" b="150" c="200"/>
+            <FuzzySet name="POOR" type="triangular" a="150" b="200" c="300"/>
+            <FuzzySet name="UNHEALTHY" type="triangular" a="200" b="300" c="400"/>
+            <FuzzySet name="HAZARDOUS" type="trapezoidal" a="300" b="400" c="500" d="500"/>
+        </InputVariable>
+
+        <!-- Occupancy (number of people) -->
+        <InputVariable name="Occupancy" min="0" max="20">
+            <FuzzySet name="EMPTY" type="trapezoidal" a="0" b="0" c="1" d="2"/>
+            <FuzzySet name="LOW" type="triangular" a="1" b="3" c="5"/>
+            <FuzzySet name="MEDIUM" type="triangular" a="4" b="8" c="12"/>
+            <FuzzySet name="HIGH" type="triangular" a="10" b="15" c="20"/>
+        </InputVariable>
+    </InputVariables>
+
+    <!-- OUTPUT VARIABLES -->
+    <OutputVariables>
+        <!-- HVAC Power Level (0-100%) -->
+        <OutputVariable name="HVAC_Power" min="0" max="100" nb_points = "500" aggregation="Sum" defuzzification ="CoG">
+            <FuzzySet name="OFF" type="trapezoidal" a="0" b="0" c="10" d="20"/>
+            <FuzzySet name="LOW" type="triangular" a="10" b="30" c="50"/>
+            <FuzzySet name="MEDIUM" type="triangular" a="40" b="50" c="60"/>
+            <FuzzySet name="HIGH" type="triangular" a="50" b="70" c="90"/>
+            <FuzzySet name="MAX" type="trapezoidal" a="80" b="90" c="100" d="100"/>
+        </OutputVariable>
+
+        <!-- Air Purifier Level (0-10) -->
+        <OutputVariable name="AirPurifier_Level" min="0" max="10" nb_points = "350" aggregation="Max" defuzzification ="MoM">
+            <FuzzySet name="OFF" type="trapezoidal" a="0" b="0" c="1" d="2"/>
+            <FuzzySet name="LOW" type="triangular" a="1" b="3" c="5"/>
+            <FuzzySet name="MEDIUM" type="triangular" a="4" b="5" c="6"/>
+            <FuzzySet name="HIGH" type="triangular" a="5" b="7" c="9"/>
+            <FuzzySet name="MAX" type="trapezoidal" a="8" b="9" c="10" d="10"/>
+        </OutputVariable>
+    </OutputVariables>
+
+    <!-- RULES SECTION -->
+    <Rules>
+        <!-- Rule 1: Extreme conditions require maximum power -->
+        <Rule id="1" description="Extreme heat or cold with poor air quality">
+            <Premise operator="AND">
+                <Premise operator="OR">
+                    <Clause variable="Temperature" set="EXTREME"/>
+                    <Clause variable="Temperature" set="FREEZING"/>
+                </Premise>
+                <Clause variable="AirQuality" set="UNHEALTHY"/>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="MAX"/>
+            <Conclusion variable="AirPurifier_Level" set="MAX"/>
+        </Rule>
+
+        <!-- Rule 2: Comfortable temperature but poor air quality -->
+        <Rule id="2" description="Comfortable temperature but poor air quality">
+            <Premise operator="AND">
+                <Clause variable="Temperature" set="COMFORTABLE"/>
+                <Clause variable="AirQuality" set="POOR"/>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="MEDIUM"/>
+            <Conclusion variable="AirPurifier_Level" set="HIGH"/>
+        </Rule>
+
+        <!-- Rule 3: High occupancy with moderate conditions -->
+        <Rule id="3" description="High occupancy with moderate conditions">
+            <Premise operator="AND">
+                <Clause variable="Occupancy" set="HIGH"/>
+                <Premise operator="OR">
+                    <Clause variable="Temperature" set="WARM"/>
+                    <Clause variable="Temperature" set="COOL"/>
+                </Premise>
+                <Premise operator="NOT">
+                    <Clause variable="AirQuality" set="HAZARDOUS"/>
+                </Premise>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="HIGH"/>
+            <Conclusion variable="AirPurifier_Level" set="MEDIUM"/>
+        </Rule>
+
+        <!-- Rule 4: XOR condition for humidity control -->
+        <Rule id="4" description="XOR condition for humidity control">
+            <Premise operator="AND">
+                <Clause variable="Temperature" set="COMFORTABLE"/>
+                <Premise operator="XOR">
+                    <Clause variable="Humidity" set="BONE_DRY"/>
+                    <Clause variable="Humidity" set="SOGGY"/>
+                </Premise>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="MEDIUM"/>
+        </Rule>
+
+        <!-- Rule 5: Complex nested conditions -->
+        <Rule id="5" description="Complex nested conditions for energy saving">
+            <Premise operator="AND">
+                <Premise operator="OR">
+                    <Clause variable="Occupancy" set="EMPTY"/>
+                    <Clause variable="Occupancy" set="LOW"/>
+                </Premise>
+                <Premise operator="AND">
+                    <Premise operator="NOT">
+                        <Clause variable="Temperature" set="EXTREME"/>
+                    </Premise>
+                    <Premise operator="NOT">
+                        <Clause variable="AirQuality" set="HAZARDOUS"/>
+                    </Premise>
+                </Premise>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="LOW"/>
+            <Conclusion variable="AirPurifier_Level" set="LOW"/>
+        </Rule>
+
+        <!-- Rule 6: Moderate air quality with high humidity -->
+        <Rule id="6" description="Moderate air quality with high humidity">
+            <Premise operator="AND">
+                <Clause variable="AirQuality" set="MODERATE"/>
+                <Clause variable="Humidity" set="HUMID"/>
+                <Premise operator="OR">
+                    <Clause variable="Temperature" set="WARM"/>
+                    <Clause variable="Temperature" set="HOT"/>
+                </Premise>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="HIGH"/>
+            <Conclusion variable="AirPurifier_Level" set="HIGH"/>
+        </Rule>
+
+        <!-- Rule 7: Comfortable conditions with medium occupancy -->
+        <Rule id="7" description="Comfortable conditions with medium occupancy">
+            <Premise operator="AND">
+                <Clause variable="Temperature" set="COMFORTABLE"/>
+                <Clause variable="Humidity" set="COMFORTABLE"/>
+                <Clause variable="AirQuality" set="GOOD"/>
+                <Clause variable="Occupancy" set="MEDIUM"/>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="MEDIUM"/>
+            <Conclusion variable="AirPurifier_Level" set="MEDIUM"/>
+        </Rule>
+
+        <!-- Rule 8: Cold with high occupancy -->
+        <Rule id="8" description="Cold conditions with high occupancy">
+            <Premise operator="AND">
+                <Clause variable="Temperature" set="COLD"/>
+                <Clause variable="Occupancy" set="HIGH"/>
+                <Premise operator="NOT">
+                    <Clause variable="AirQuality" set="POOR"/>
+                </Premise>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="HIGH"/>
+            <Conclusion variable="AirPurifier_Level" set="MEDIUM"/>
+        </Rule>
+
+        <!-- Rule 9: Hot with low humidity -->
+        <Rule id="9" description="Hot conditions with low humidity">
+            <Premise operator="AND">
+                <Clause variable="Temperature" set="HOT"/>
+                <Clause variable="Humidity" set="DRY"/>
+                <Premise operator="OR">
+                    <Clause variable="Occupancy" set="MEDIUM"/>
+                    <Clause variable="Occupancy" set="HIGH"/>
+                </Premise>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="HIGH"/>
+            <Conclusion variable="AirPurifier_Level" set="LOW"/>
+        </Rule>
+
+        <!-- Rule 10: Emergency shutdown condition -->
+        <Rule id="10" description="Emergency shutdown for hazardous air quality">
+            <Premise>
+                <Clause variable="AirQuality" set="HAZARDOUS"/>
+            </Premise>
+            <Conclusion variable="HVAC_Power" set="OFF"/>
+            <Conclusion variable="AirPurifier_Level" set="MAX"/>
+        </Rule>
+    </Rules>
+</FuzzySystem>

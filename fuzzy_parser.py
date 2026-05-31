@@ -63,3 +63,5 @@ def parse_xml(filepath):
         ))
 
     return system
+
+print(parse_xml("problem_pourboire.xml"))

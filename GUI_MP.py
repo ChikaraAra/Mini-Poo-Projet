@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from fuzzy_parser import parse_xml
 
-class FuzzyGUI:
+class FuzzyGUI():
     def __init__(self, root):
         self.root = root
         self.root.title("Moteur Logique Floue - Projet 2025_S2")

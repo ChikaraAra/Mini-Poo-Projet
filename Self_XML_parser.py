@@ -1,4 +1,4 @@
-import tkinter as TK
+
 import xml.etree.ElementTree as ET
 
 def ChargementXML(chemin_fichier):
@@ -41,5 +41,3 @@ def ChargementXML(chemin_fichier):
         }
 
     return(input_variables, output_variables, rules)
-
-print(ChargementXML("problem_pourboire.xml")[2])

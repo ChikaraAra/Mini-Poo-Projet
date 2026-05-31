@@ -1,6 +1,8 @@
 # fuzzy_classes.py
 import numpy as np
-from fonction_math_MP import triangulaire, trapezoidale, gaussienne
+from fonction_math_MP import Triangulaire, Trapezoidale, Gaussienne, DemiTrapezeGauche, DemiTrapezeDroite
+
+
 
 class FuzzySet:
     """Définit un ensemble flou (ex: 'Froid', 'Chaud') et sa loi mathématique."""
@@ -12,11 +14,11 @@ class FuzzySet:
     def get_appartenance(self, x):
         """Étape 1 : Retourne le degré d'appartenance µ pour une valeur x."""
         if self.set_type == "triangulaire":
-            return triangulaire(x, self.params['a'], self.params['b'], self.params['c'])
+            return Triangulaire(self.params['a'], self.params['b'], self.params['c'])(x)
         elif self.set_type == "trapezoidale":
-            return trapezoidale(x, self.params['a'], self.params['b'], self.params['c'], self.params['d'])
+            return Trapezoidale(self.params['a'], self.params['a'], self.params['b'], self.params['c'])(x)
         elif self.set_type == "gaussienne":
-            return gaussienne(x, self.params['moyenne'], self.params['ecart_type'])
+            return Gaussienne(self.params['moyenne'], self.params['ecart_type'])(x)
         return 0.0
 
 class Variable:
